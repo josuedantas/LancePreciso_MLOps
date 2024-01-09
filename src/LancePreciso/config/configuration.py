@@ -1,7 +1,8 @@
 import os
 from LancePreciso.constants import *
-from LancePreciso.utils.common import read_yaml, create_directories
-from LancePreciso.entity.config_entity import (DataIngestionConfig, PrepareBaseModelConfig, TrainingConfig)
+from LancePreciso.utils.common import read_yaml, create_directories, save_json
+from LancePreciso.entity.config_entity import (DataIngestionConfig, PrepareBaseModelConfig,
+                                                TrainingConfig, EvaluationConfig)
 
 class ConfigurationManager:
     def __init__(
@@ -37,9 +38,10 @@ class ConfigurationManager:
         prepare_base_model_config = PrepareBaseModelConfig(
             root_dir=Path(config.root_dir),
             base_model_path=Path(config.base_model_path),
-            updated_base_model_path=Path(config.updated_base_model_path),
+            #updatedbase_model_path=Path(config.updated_base_model_path),
             params_learning_rate=self.params.learning_rate,
-            params_validation_split=self.params.validation_split
+            params_validation_split=self.params.validation_split,
+            params_lenght_train_dataset= self.params.lenght_train_features
         )
 
         return prepare_base_model_config
@@ -55,9 +57,20 @@ class ConfigurationManager:
         training_config = TrainingConfig(
             root_dir=Path(training.root_dir),
             trained_model_path=Path(training.trained_model_path),
-            updated_base_model_path=Path(prepare_base_model.updated_base_model_path),
+            base_model_path=Path(prepare_base_model.base_model_path),
             training_data=Path(training_data),
-            params_epochs=params.EPOCHS
+            params_epochs=params.epochs,
+            params_validation_split = params.validation_split
         )
 
         return training_config
+    def get_evaluation_config(self) -> EvaluationConfig:
+        eval_config = EvaluationConfig(
+            path_of_model="artifacts/training/model.h5",
+            training_data="artifacts/data_ingestion/dataset_carros_lance.csv",
+            mlflow_uri="https://dagshub.com/josuedantas/LancePreciso_MLOps.mlflow",
+            all_params=self.params
+            #params_image_size=self.params.IMAGE_SIZE,
+            #params_batch_size=self.params.BATCH_SIZE
+        )
+        return eval_config

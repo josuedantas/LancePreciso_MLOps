@@ -1,24 +1,28 @@
 from LancePreciso.config.configuration import ConfigurationManager
+from LancePreciso.components.model_evaluation_mlflow import Evaluation
 from LancePreciso.components.model_trainer import Training
+
 from LancePreciso import logger
 
 
 
-STAGE_NAME = "Training"
+STAGE_NAME = "Evaluation stage"
 
 
-
-class ModelTrainingPipeline:
+class EvaluationPipeline:
     def __init__(self):
         pass
 
     def main(self):
         config = ConfigurationManager()
-        training_config = config.get_training_config()
-        training = Training(config=training_config)
-        training.get_base_model()
-        training.train_valid_generator()
-        training.train()
+        eval_config = config.get_evaluation_config()
+        config2 = Training(config)
+        config2.train_valid_generator()
+        evaluation = Evaluation(eval_config, config2)
+        evaluation.evaluation()
+        evaluation.save_score()
+        # evaluation.log_into_mlflow()
+
 
 
 
@@ -26,10 +30,10 @@ if __name__ == '__main__':
     try:
         logger.info(f"*******************")
         logger.info(f">>>>>> stage {STAGE_NAME} started <<<<<<")
-        obj = ModelTrainingPipeline()
+        obj = EvaluationPipeline()
         obj.main()
         logger.info(f">>>>>> stage {STAGE_NAME} completed <<<<<<\n\nx==========x")
     except Exception as e:
         logger.exception(e)
         raise e
-        
+            
